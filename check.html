@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Grammar & Spelling Checker</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --accent: #4fc3dc;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --error: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f4f8;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .text-editor {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        #text-input {
+            width: 100%;
+            min-height: 250px;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        #text-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 195, 220, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3a5a8c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background-color: var(--light);
+            color: var(--dark);
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .stats-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-align: center;
+        }
+
+        .results {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .results-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .results-title i {
+            font-size: 1.2rem;
+        }
+
+        .issue-list {
+            list-style: none;
+        }
+
+        .issue-item {
+            padding: 0.8rem;
+            border-left: 3px solid;
+            margin-bottom: 0.8rem;
+            background-color: #f8f9fa;
+            border-radius: 0 6px 6px 0;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .issue-item:hover {
+            transform: translateX(3px);
+        }
+
+        .issue-item.error {
+            border-left-color: var(--error);
+        }
+
+        .issue-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        .issue-type {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .issue-type.error {
+            color: var(--error);
+        }
+
+        .issue-type.warning {
+            color: var(--warning);
+        }
+
+        .issue-context {
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .suggestion {
+            background-color: rgba(40, 167, 69, 0.1);
+            border-left: 2px solid var(--success);
+            padding: 0.5rem;
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        .no-issues {
+            padding: 2rem 0;
+            text-align: center;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .char-count {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+        }
+
+        .highlight {
+            background-color: rgba(255, 193, 7, 0.2);
+            padding: 0 2px;
+            border-bottom: 2px solid var(--warning);
+        }
+
+        .error-highlight {
+            background-color: rgba(220, 53, 69, 0.1);
+            padding: 0 2px;
+            border-bottom: 2px solid var(--error);
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .buttons {
+                justify-content: center;
+            }
+
+            .char-count {
+                text-align: center;
+                margin-top: 0.5rem;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: var(--dark);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .pulse {
+            animation: pulse 0.5s;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-spell-check"></i>
+                <h1>Grammar & Spelling Checker</h1>
+            </div>
+            <p class="tagline">Write with confidence. Check for errors in real-time.</p>
+        </header>
+
+        <div class="controls">
+            <div class="buttons">
+                <button class="btn btn-primary" id="check-btn">
+                    <i class="fas fa-search"></i> Check Text
+                </button>
+                <button class="btn btn-secondary" id="clear-btn">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
+                <button class="btn btn-secondary" id="copy-btn">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+            <div class="char-count">
+                <span id="word-count">0</span> words | <span id="char-count">0</span> characters
+            </div>
+        </div>
+
+        <div class="text-editor">
+            <textarea id="text-input"
+                placeholder="Type or paste your text here to check for grammar and spelling errors..."></textarea>
+        </div>
+
+        <div class="stats">
+            <h3 class="stats-title"><i class="fas fa-chart-bar"></i> Text Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="readability-score">--</div>
+                    <div class="stat-label">Readability Score</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="errors-count">0</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="warnings-count">0</div>
+                    <div class="stat-label">Warnings</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="sentence-count">0</div>
+                    <div class="stat-label">Sentences</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results">
+            <h3 class="results-title"><i class="fas fa-clipboard-check"></i> Grammar & Spelling Results</h3>
+            <div id="results-container">
+                <div class="no-issues">
+                    <i class="fas fa-check-circle"
+                        style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;"></i>
+                    <p>No text to check. Type or paste your text and click 'Check Text'.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const textInput = document.getElementById('text-input');
+        const checkBtn = document.getElementById('check-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const wordCount = document.getElementById('word-count');
+        const charCount = document.getElementById('char-count');
+        const resultsContainer = document.getElementById('results-container');
+        const errorsCount = document.getElementById('errors-count');
+        const warningsCount = document.getElementById('warnings-count');
+        const sentenceCount = document.getElementById('sentence-count');
+        const readabilityScore = document.getElementById('readability-score');
+
+        // Enhanced grammar rules with dynamic spelling check
+        const grammarRules = [
+            {
+                name: "Dynamic Spelling Check",
+                type: "error",
+                check: async function (text) {
+                    const issues = [];
+                    const words = text.match(/\b[\w']+\b/g) || [];
+
+                    for (const word of words) {
+                        // Skip numbers and words with apostrophes (like contractions)
+                        if (word.match(/^\d+$/) || word.includes("'")) continue;
+
+                        // Check if word exists in English dictionary
+                        const isCorrect = await checkSpelling(word);
+                        if (!isCorrect) {
+                            const index = text.indexOf(word);
+                            if (index !== -1) { // Ensure word is found
+                                issues.push({
+                                    type: "error",
+                                    message: `Possible spelling mistake: '${word}'`,
+                                    context: getContext(text, index, word.length),
+                                    index: index,
+                                    length: word.length,
+                                    suggestion: await getSpellingSuggestions(word)
+                                });
+                            }
+                        }
+                    }
+                    return issues;
+                }
+            },
+            {
+                name: "Repeated words",
+                type: "warning",
+                check: function (text) {
+                    const issues = [];
+                    const regex = /\b(\w+)\s+\1\b/gi;
+                    let match;
+                    while ((match = regex.exec(text)) !== null) {
+                        issues.push({
+                            type: "warning",
+                            message: `Repeated word: '${match[1]}'`,
+                            context: getContext(text, match.index, match[0].length),
+                            index: match.index,
+                            length: match[0].length,
+                            suggestion: `Consider removing the duplicate word`
+                        });
+                    }
+                    return issues;
+                }
+            },
+            {
+                name: "Passive voice",
+                type: "warning",
+                check: function (text) {
+                    const issues = [];
+                    const regex = /\b(am|are|were|being|is|been|was|be)\s+[a-z]+ed\b/gi;
+                    let match;
+                    while ((match = regex.exec(text)) !== null) {
+                        issues.push({
+                            type: "warning",
+                            message: `Passive voice detected`,
+                            context: getContext(text, match.index, match[0].length),
+                            index: match.index,
+                            length: match[0].length,
+                            suggestion: `Consider rewriting in active voice`
+                        });
+                    }
+                    return issues;
+                }
+            },
+            {
+                name: "Capitalization after punctuation",
+                type: "error",
+                check: function (text) {
+                    const issues = [];
+                    const regex = /[.!?]\s+[a-z]/g;
+                    let match;
+                    while ((match = regex.exec(text)) !== null) {
+                        issues.push({
+                            type: "error",
+                            message: `Missing capitalization after punctuation`,
+                            context: getContext(text, match.index + 2, 1),
+                            index: match.index + 2,
+                            length: 1,
+                            suggestion: `Capitalize the first letter after punctuation`
+                        });
+                    }
+                    return issues;
+                }
+            }
+        ];
+
+        // Check spelling using Dictionary API
+        async function checkSpelling(word) {
+            try {
+                if (word[0] === word[0].toUpperCase() && word[0] !== word[0].toLowerCase()) {
+                    return true;
+                }
+                // Skip very short words
+                if (word.length <= 2) return true;
+
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`);
+                return response.ok;
+            } catch (error) {
+                console.error("Spell check error:", error);
+                return true; // Assume correct if API fails
+            }
+        }
+
+        // Get spelling suggestions
+        async function getSpellingSuggestions(word) {
+            try {
+                const response = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(word)}&max=3`);
+                const suggestions = await response.json();
+                return suggestions.length > 0
+                    ? `Did you mean: ${suggestions.map(s => s.word).join(', ')}?`
+                    : "No spelling suggestions available";
+            } catch (error) {
+                return "Error fetching suggestions";
+            }
+        }
+
+        // Helper function to get context around an issue
+        function getContext(text, index, length) {
+            const start = Math.max(0, index - 20);
+            const end = Math.min(text.length, index + length + 20);
+            let context = text.slice(start, end);
+
+            if (start > 0) context = '...' + context;
+            if (end < text.length) context = context + '...';
+
+            return context;
+        }
+
+        // Update word and character counts
+        function updateCounts() {
+            const text = textInput.value.trim();
+            const words = text ? text.split(/\s+/).filter(word => word.length > 0) : [];
+            const chars = text.length;
+
+            wordCount.textContent = words.length;
+            charCount.textContent = chars;
+
+            // Count sentences (roughly)
+            const sentences = text ? text.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0) : [];
+            sentenceCount.textContent = sentences.length;
+
+            // Reset stats if no text
+            if (text.length === 0) {
+                errorsCount.textContent = "0";
+                warningsCount.textContent = "0";
+                sentenceCount.textContent = "0";
+                readabilityScore.textContent = "--";
+            }
+        }
+
+        // Calculate readability score (Flesch-Kincaid Grade Level - simplified)
+        function calculateReadability(text) {
+            if (!text.trim()) return "--";
+
+            const words = text.split(/\s+/).filter(word => word.length > 0);
+            if (words.length === 0) return "--";
+
+            const sentences = text.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0);
+            if (sentences.length === 0) return "--";
+
+            const syllables = countSyllables(text);
+
+            const wordsPerSentence = words.length / sentences.length;
+            const syllablesPerWord = syllables / words.length;
+
+            // Flesch-Kincaid Grade Level formula
+            const score = 0.39 * wordsPerSentence + 11.8 * syllablesPerWord - 15.59;
+
+            return Math.max(0, Math.min(12, Math.round(score))).toString();
+        }
+
+        // Estimate syllable count (English only, simplified)
+        function countSyllables(text) {
+            const words = text.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+            let count = 0;
+
+            const vowels = "aeiouy";
+
+            for (const word of words) {
+                // Remove punctuation
+                const cleanWord = word.replace(/[^\w]/g, "");
+                if (!cleanWord) continue;
+
+                let wordCount = 0;
+                let prevIsVowel = false;
+
+                for (let i = 0; i < cleanWord.length; i++) {
+                    const isVowel = vowels.includes(cleanWord[i]);
+                    if (isVowel && !prevIsVowel) {
+                        wordCount++;
+                    }
+                    prevIsVowel = isVowel;
+                }
+
+                // Words with no detected syllables get at least one
+                if (wordCount === 0) wordCount = 1;
+
+                // Handle silent e at the end of words
+                if (cleanWord.length > 2 && cleanWord.endsWith("e") && !cleanWord.endsWith("le")) {
+                    wordCount = Math.max(1, wordCount - 1);
+                }
+
+                count += wordCount;
+            }
+
+            return count;
+        }
+
+        // Show initial results message
+        function showInitialResults() {
+            resultsContainer.innerHTML = `
+                <div class="no-issues">
+                    <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;"></i>
+                    <p>No text to check. Type or paste your text and click 'Check Text'.</p>
+                </div>
+            `;
+            errorsCount.textContent = "0";
+            warningsCount.textContent = "0";
+        }
+
+        // Update statistics based on found issues
+        function updateStats(issues) {
+            const errors = issues.filter(issue => issue.type === 'error').length;
+            const warnings = issues.filter(issue => issue.type === 'warning').length;
+
+            errorsCount.textContent = errors;
+            warningsCount.textContent = warnings;
+            readabilityScore.textContent = calculateReadability(textInput.value);
+        }
+
+        // Display results
+        function displayResults(issues) {
+            if (issues.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-issues">
+                        <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;"></i>
+                        <p>No grammar or spelling issues found!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<ul class="issue-list">';
+
+            for (const issue of issues) {
+                html += `
+                    <li class="issue-item ${issue.type}" data-index="${issue.index}">
+                        <div class="issue-type ${issue.type}">
+                            <i class="fas fa-${issue.type === 'error' ? 'times-circle' : 'exclamation-triangle'}"></i>
+                            ${issue.message}
+                        </div>
+                        <div class="issue-context">${issue.context}</div>
+                        <div class="suggestion">${issue.suggestion}</div>
+                    </li>
+                `;
+            }
+
+            html += '</ul>';
+            resultsContainer.innerHTML = html;
+
+            // Highlight issues in the text
+            highlightIssues(issues);
+        }
+
+        // Highlight issues in the text
+        function highlightIssues(issues) {
+            let text = textInput.value;
+            let highlightedText = '';
+            let lastPos = 0;
+
+            // Sort issues by position
+            issues.sort((a, b) => a.index - b.index);
+
+            for (const issue of issues) {
+                // Add text before the issue
+                highlightedText += text.slice(lastPos, issue.index);
+
+                // Add highlighted issue
+                const issueText = text.slice(issue.index, issue.index + issue.length);
+                const highlightClass = issue.type === 'error' ? 'error-highlight' : 'highlight';
+                highlightedText += `<span class="${highlightClass}" title="${issue.message}">${issueText}</span>`;
+
+                lastPos = issue.index + issue.length;
+            }
+
+            // Add remaining text
+            highlightedText += text.slice(lastPos);
+
+            // Create a temporary element to hold the highlighted text
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = highlightedText;
+
+            // Replace textarea with contenteditable div for highlighting
+            const editorDiv = document.createElement('div');
+            editorDiv.id = 'text-editor-content';
+            editorDiv.className = 'text-editor';
+            editorDiv.innerHTML = `
+                <div id="highlighted-text" contenteditable="true" style="width: 100%; min-height: 250px; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; background: white;">
+                    ${tempDiv.innerHTML}
+                </div>
+            `;
+
+            // Replace the textarea with our highlighted version
+            textInput.replaceWith(editorDiv);
+
+            // Handle clicks on highlighted text
+            document.getElementById('highlighted-text').addEventListener('click', function (e) {
+                if (e.target.classList.contains('highlight') || e.target.classList.contains('error-highlight')) {
+                    const issueText = e.target.textContent;
+                    const issue = issues.find(i =>
+                        text.slice(i.index, i.index + i.length) === issueText &&
+                        text.indexOf(issueText, i.index) === e.target.offsetParent.textContent.indexOf(issueText)
+                    );
+
+                    if (issue) {
+                        // Scroll to the issue in the results list
+                        const issueElement = document.querySelector(`[data-index="${issue.index}"]`);
+                        if (issueElement) {
+                            issueElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            issueElement.classList.add('pulse');
+                            setTimeout(() => issueElement.classList.remove('pulse'), 1000);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Restore the original textarea
+        function restoreTextarea() {
+            const editorDiv = document.getElementById('text-editor-content');
+            if (editorDiv) {
+                const highlightedText = document.getElementById('highlighted-text');
+                textInput.value = highlightedText.textContent;
+                editorDiv.replaceWith(textInput);
+            }
+        }
+
+        // Check text for grammar and spelling issues
+        async function checkText() {
+            const text = textInput.value.trim();
+
+            if (!text) {
+                showInitialResults();
+                return;
+            }
+
+            // Show loading state
+            resultsContainer.innerHTML = `
+                <div class="no-issues loading">
+                    <i class="fas fa-spinner" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <p>Checking text for issues...</p>
+                </div>
+            `;
+
+            try {
+                let allIssues = [];
+
+                // Process each rule sequentially
+                for (const rule of grammarRules) {
+                    const issues = await rule.check(text);
+                    if (issues && issues.length > 0) {
+                        allIssues = allIssues.concat(issues);
+                    }
+                }
+
+                displayResults(allIssues);
+                updateStats(allIssues);
+            } catch (error) {
+                console.error("Checking error:", error);
+                resultsContainer.innerHTML = `
+                    <div class="no-issues">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--error); margin-bottom: 1rem;"></i>
+                        <p>Error checking text. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the app
+        function init() {
+            updateCounts();
+            showInitialResults();
+
+            // Add event listeners
+            textInput.addEventListener('input', updateCounts);
+
+            checkBtn.addEventListener('click', function () {
+                restoreTextarea(); // Restore textarea before checking
+                checkText();
+            });
+
+            clearBtn.addEventListener('click', function () {
+                restoreTextarea(); // Restore textarea before clearing
+                textInput.value = '';
+                updateCounts();
+                showInitialResults();
+                textInput.focus();
+            });
+
+            copyBtn.addEventListener('click', function () {
+                textInput.select();
+                document.execCommand('copy');
+
+                // Show tooltip feedback
+                const tooltip = document.createElement('span');
+                tooltip.className = 'tooltiptext';
+                tooltip.textContent = 'Copied!';
+                copyBtn.appendChild(tooltip);
+
+                setTimeout(function () {
+                    copyBtn.removeChild(tooltip);
+                }, 2000);
+            });
+
+            // Handle Enter key in textarea to check text
+            textInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    e.preventDefault();
+                    checkText();
+                }
+            });
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
